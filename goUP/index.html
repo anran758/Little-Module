@@ -7,7 +7,7 @@
 </head>
 <body>
   <div class="container">this is top </div>
-  <a class="go-up" id="go-top" href="javascript:;" title="回到顶部">
+  <a class="go-up" id="goTop" href="javascript:;" title="回到顶部">
     <span class="glyphicon glyphicon-menu-up go-up-icon"></span>
   </a>
   <style type="text/css">
@@ -48,11 +48,9 @@
   </style>
   <script>
   // Go to Top Module
-  goTop();
-  function goTop() {
-    var obtn = document.getElementById('go-top'),
-      isTop = true,
-      timer = null;
+  (function goTop() {
+    var obtn = document.getElementById('goTop');
+    var isTop = true, timer = null;
 
     // 滚动条滚动时触发,
     window.addEventListener('scroll', function() {
@@ -83,8 +81,7 @@
         }
       }, 30);
     };
-  }
-    
+  })();
   </script>
 </body>
 </html>
