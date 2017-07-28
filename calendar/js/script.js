@@ -1,5 +1,5 @@
 (function() {
-	// 封装方法
+	// Package
 	var dog = {
 		$: function(selector) {
 			return document.querySelector(selector);
@@ -13,54 +13,12 @@
 		}
 	};
 
-	function render() {
-		var cale = dog.$('calendar'),
-        caleTit  = document.createElement('div'),
-        caleBody = document.createElement('div');
-
-    // header
-    caleTit.className = 'cale-tit';
-    caleTit.innerHTML = "<span class='prev-month'></span>" +
-                    "<span class='next-month'></span>" +
-                    "<span class='cale-tit'></span>";
-    cale.appendChild(caleTit);
-
-    // HTML结构渲染
-    caleBody.className = 'cale-body';
-    var tableHead = "<tr>" +
-                      "<th>日</th>" +
-                      "<th>一</th>" +
-                      "<th>二</th>" +
-                      "<th>三</th>" +
-                      "<th>四</th>" +
-                      "<th>五</th>" +
-                      "<th>六</th>" +
-                    "<tr>";
-    var tableBody = '';
-
-    // 七行六列, 一个月最多就31天.
-    for (var i = 0; i < 6; i++) {
-      tableBody = "<tr>" +
-                      "<th></th>" +
-                      "<th></th>" +
-                      "<th></th>" +
-                      "<th></th>" +
-                      "<th></th>" +
-                      "<th></th>" +
-                      "<th></th>" +
-                    "<tr>";
-      caleBody.innerHTML = "<table class='cale-table'>" +
-                               tableHead + tableBody +
-                           "</table>";
-      cale.appendChild(caleBody);
-    }
-  }
-
   function calendar() {
-    var args = arguments[0],
-        days = args.zh[0]
-        dom  = args.dom;
+    var args = arguments[0];
 
+    for (var key in args) {
+      this[key] = args[key];
+    }
     this.init();
   }
 
@@ -68,76 +26,163 @@
     init : function() {
       this.render();
     },
+
     now : new Date(),
-    // 渲染HTML
+
+    create: function(ele) {
+      return document.createElement(ele);
+    },
+
+    // Rendering HTML
     render : function() {
       var that = this,
+          data = this.zh;
           el = document.getElementById('calendar');
 
       if(el) {
-        
-      }
-
-      var cale = dog.$('calendar'),
-          caleTit  = document.createElement('div'),
-          caleBody = document.createElement('div');
-
-      // header
-      caleTit.className = 'cale-tit';
-      caleTit.innerHTML = "<span class='prev-month'></span>" +
-                      "<span class='next-month'></span>" +
-                      "<span class='cale-tit'></span>";
-      cale.appendChild(caleTit);
-
-      for (var i = 0, len = this.days;i < len; i++) {
-
+        that.fillTitle();
+        that.fillBody();
+        that.fillYear();
+        that.addNextMonth();
       }
     },
 
+    // Calendar title
+    fillTitle: function() {
+      var caleTit = this.create('div');
+
+      // header
+      caleTit.className = 'cale-title';
+      caleTit.innerHTML = "<span class='prev-month'></span>" +
+                      "<label class='cale-tit'></label>" +
+                      "<span class='next-month'></span>";
+      dog.$('.calendar').appendChild(caleTit);
+    },
+
+    // Calendar Main body
+    fillBody: function() {
+      var caleBody  = this.create('div'),
+          table = this.create('table'),
+          tHead = this.create('thead'),
+          html = '<tr>',
+          n = 0,
+          days = this.zh.days;
+
+      // Week
+      while (n < days.length) {
+        html += '<th>' + days[n++] + '</th>';
+      }
+      html += '</tr>';
+      tHead.innerHTML += html;
+
+      // day
+      var tBody = this.create('tbody'),
+          time  = this.getFullTime(),
+
+          // 'startDay' 第一天是星期几, 'data'一个月的天数
+          startDay = (new Date(time.year, time.month - 1, 1)).getDay(),
+          data = this.getDaysInMonth(time.year, time.month),
+          cons = '',
+          num = 1,
+          tr = null,
+          td = null;
+
+      this.time = time;
+      tBody.innerHTML = '';
+
+        // 渲染表格并传入数字
+        for (var i = 0;i < 6; i++) {
+          tr = tBody.insertRow(i);
+
+          //插入内容
+          for (var j = 0; j < 7; j++) {
+            td = tr.insertCell(j);
+            if (num <= data) {
+              td.innerHTML = (startDay-- > 0) ? '' : (td.className = 'day', num++);
+            }
+
+            // 遍历到'today', 就添加类名高亮
+            if (td.innerHTML == time.day) {
+              td.className += ' active';
+            }
+          }
+      }
+
+      tBody.appendChild(tr);
+      table.appendChild(tHead);
+      table.appendChild(tBody);
+      table.className = 'cale-table';
+      caleBody.className = 'cale-table-box';
+      caleBody.appendChild(table);
+      dog.$('.calendar').appendChild(caleBody);
+    },
+
+    fillYear: function() {
+      var el   = dog.$('.cale-tit'),
+          time = this.time;
+
+      el.innerHTML = time.year + '年' + time.month + '月';
+    },
+
+    getFullTime : function(now){
+        var time  = now || new Date(),
+            year  = time.getFullYear(),
+            week  = time.getDay(),
+            day   = time.getDate(),
+            month = time.getMonth();
+
+        this.month = month;
+        return {
+            date  : time,
+            year  : year,
+            week  : week,
+            day   : day,
+            month : month + 1
+        };
+    },
+
+    // 一个月有多少天, 前面 getFullTime 在返回时"month + 1"
+    getDaysInMonth: function (year, month) {
+      return new Date(year, parseInt(month), 0).getDate();
+    },
+
+    addNextMonth: function() {
+      var next = dog.$('.next-month');
+      dog.on(next, 'click', this.nextMonthHandle.bind(this));
+    },
+
+    nextMonthHandle: function(e) {
+        var date = this.time.date;
+
+        // 重设月份
+        date.setMonth(++this.month);
+        this.fillBody(this.getFullTime(date));
+        this.fillYear();
+    },
+
+    addPrevMonth: function() {
+      var prev = dog.$('.prev-month');
+      dog.on(next, 'click', this.prevMonthHandle.bind(this));
+    },
+    prevMonthHandle: function(e) {
+        var date = this.time.date;
+
+        // 重设月份
+        date.setMonth(--this.month);
+        this.fillBody(this.getFullTime(date));
+        this.fillYear();
+    }
   };
-
-  function showCalender() {
-    // 获取日期
-    var time  = new Date(),
-        year  = time.getFullYear(),
-        week  = time.getDay(),
-        day   = time.getDate(),
-        month = time.getMonth();
-
-    // 标题日期
-    var caleTit = g.$('.cale-tit'),
-        titStr  = year + " / " + (month + 1) + " / ";
-    caleTit.innerHTML = titStr;
-
-    // 日期 data
-    var table = g.$('.cale-table'),
-        tds   = document.getElementsByTagName('td');
-        startDay = new Date(year, month, 1);   // 当月第一天
-
-     for (var i = 0; i < tds.length; i++) {
-
-     }
-  }
 
   var defaults = {
-    days:  ['日','一','二','三','四','五','六'],
-    dom: [
-          "<tr>" +
-            "<th></th>" +
-            "<th></th>" +
-            "<th></th>" +
-            "<th></th>" +
-            "<th></th>" +
-            "<th></th>" +
-            "<th></th>" +
-          "<tr>"
-        ]
+    zh: {
+      days:  ['日','一','二','三','四','五','六']
+    }
   };
 
-  function init(data){
-    new calendar(data);
+  function init(){
+    new calendar(defaults);
   }
-
-  init(defaults);
+  init();
 
 })();
