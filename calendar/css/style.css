@@ -14,13 +14,19 @@ body {
 }
 /* Reset end */
 .cale-wrap {
-  width: 300px;
-  padding-top: 100px;
-  margin: 0 auto;
+  width: 380px;
+  padding: 20px;
+  margin: 100px auto;
+  background-color: #fff;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.2),
+              -5px -5px 10px rgba(0, 0, 0, 0.1),
+              -10px -10px 40px rgba(0, 0, 0, 0.12),
+              inset 0 0 10px rgba(0, 0, 0, 0.1);
 }
 .calendar {
   display: block;
-  width: 300px;
+  width: 320px;
+  margin: 0 auto;
 }
 .calendar .cale-title {
   position: relative;
@@ -69,8 +75,8 @@ body {
 }
 .cale-table tr {
   box-sizing: border-box;
-  height: 30px;
-  line-height: 30px;
+  height: 36px;
+  line-height: 36px;
 }
 .active {
   color: red;

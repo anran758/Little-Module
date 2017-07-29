@@ -36,35 +36,49 @@
     // Rendering HTML
     render : function() {
       var that = this,
-          data = this.zh;
-          el = document.getElementById('calendar');
+          data = this.zh,
+          el = null,
+          caleBox = this.create('div'),
+          cale = dog.$('#calendar');
 
-      if(el) {
+      if(el = dog.$('#caleBox')) {
+        this.calendar = el;
+      } else {
+        createCalendar();
         that.fillTitle();
-        that.fillBody();
+        that.fillWeek();
+        that.fillDay();
         that.fillYear();
+        that.addPrevMonth();
         that.addNextMonth();
+      }
+      function createCalendar() {
+        caleBox.innerHTML = '<div class="cale-title"></div>' +
+                            '<div class="cale-table-box">' +
+                              '<table class="cale-table">' +
+                                '<thead></thead>' + '<tbody></tbody>' +
+                              '</table>'+
+                            '</div>';
+       caleBox.className = 'cale-box';
+       caleBox.id = 'caleBox';
+       console.log(cale);
+       console.log(caleBox);
+       cale.appendChild(caleBox);
+       that.calendar = caleBox;
       }
     },
 
     // Calendar title
     fillTitle: function() {
-      var caleTit = this.create('div');
+      var caleTit = this.calendar.querySelector('.cale-title');
 
-      // header
-      caleTit.className = 'cale-title';
       caleTit.innerHTML = "<span class='prev-month'></span>" +
                       "<label class='cale-tit'></label>" +
                       "<span class='next-month'></span>";
-      dog.$('.calendar').appendChild(caleTit);
     },
 
-    // Calendar Main body
-    fillBody: function() {
-      var caleBody  = this.create('div'),
-          table = this.create('table'),
-          tHead = this.create('thead'),
-          html = '<tr>',
+    fillWeek: function() {
+      var html = '<tr>',
           n = 0,
           days = this.zh.days;
 
@@ -73,20 +87,25 @@
         html += '<th>' + days[n++] + '</th>';
       }
       html += '</tr>';
-      tHead.innerHTML += html;
+      this.calendar.querySelector('thead').innerHTML += html;
+    },
 
-      // day
-      var tBody = this.create('tbody'),
-          time  = this.getFullTime(),
+    // Calendar Main body
+    fillDay: function(now) {
+      var calendar = this.calendar,
+          tBody = calendar.querySelector('tbody'),
+          time  = now || this.getFullTime(),
 
-          // 'startDay' 第一天是星期几, 'data'一个月的天数
+          // 第一天是星期几, 'data'一个月的天数
           startDay = (new Date(time.year, time.month - 1, 1)).getDay(),
           data = this.getDaysInMonth(time.year, time.month),
-          cons = '',
+          html = '',
           num = 1,
           tr = null,
           td = null;
 
+
+      // day
       this.time = time;
       tBody.innerHTML = '';
 
@@ -109,16 +128,10 @@
       }
 
       tBody.appendChild(tr);
-      table.appendChild(tHead);
-      table.appendChild(tBody);
-      table.className = 'cale-table';
-      caleBody.className = 'cale-table-box';
-      caleBody.appendChild(table);
-      dog.$('.calendar').appendChild(caleBody);
     },
 
     fillYear: function() {
-      var el   = dog.$('.cale-tit'),
+      var el   = this.calendar.querySelector('.cale-tit'),
           time = this.time;
 
       el.innerHTML = time.year + '年' + time.month + '月';
@@ -146,30 +159,32 @@
       return new Date(year, parseInt(month), 0).getDate();
     },
 
+    // 翻页
     addNextMonth: function() {
       var next = dog.$('.next-month');
       dog.on(next, 'click', this.nextMonthHandle.bind(this));
     },
 
+    // 这里的函数直接加到监听器中的话会读取不到'time'
     nextMonthHandle: function(e) {
         var date = this.time.date;
 
         // 重设月份
         date.setMonth(++this.month);
-        this.fillBody(this.getFullTime(date));
+        this.fillDay(this.getFullTime(date));
         this.fillYear();
     },
 
     addPrevMonth: function() {
       var prev = dog.$('.prev-month');
-      dog.on(next, 'click', this.prevMonthHandle.bind(this));
+      dog.on(prev, 'click', this.prevMonthHandle.bind(this));
     },
     prevMonthHandle: function(e) {
         var date = this.time.date;
 
         // 重设月份
         date.setMonth(--this.month);
-        this.fillBody(this.getFullTime(date));
+        this.fillDay(this.getFullTime(date));
         this.fillYear();
     }
   };
