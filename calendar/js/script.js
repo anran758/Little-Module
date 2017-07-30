@@ -104,7 +104,6 @@
           tr = null,
           td = null;
 
-
       // day
       this.time = time;
       tBody.innerHTML = '';
@@ -121,11 +120,11 @@
             }
 
             // 遍历到'today', 就添加类名高亮
-            if (td.innerHTML == time.day) {
-              td.className += ' active';
-            }
+              if (td.innerHTML == time.day) {
+                td.className += ' active';
+              }
           }
-      }
+        }
 
       tBody.appendChild(tr);
     },
