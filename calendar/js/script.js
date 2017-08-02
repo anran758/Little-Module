@@ -61,8 +61,6 @@
                             '</div>';
        caleBox.className = 'cale-box';
        caleBox.id = 'caleBox';
-       console.log(cale);
-       console.log(caleBox);
        cale.appendChild(caleBox);
        that.calendar = caleBox;
       }
